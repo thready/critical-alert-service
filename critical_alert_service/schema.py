@@ -98,7 +98,11 @@ def validate_alert(payload: Any) -> Tuple[bool, Dict[str, str]]:
 
     for error in errors:
         if error.validator == "additionalProperties":
-            extras = error.params.get("additionalProperties", [])
+            extras = []
+            if isinstance(error.params, dict):
+                extras = error.params.get("additionalProperties") or []
+            elif isinstance(error.params, (list, tuple, set)):
+                extras = list(error.params)
             for extra in extras:
                 if extra not in field_errors:
                     field_errors[extra] = "unknown field"
