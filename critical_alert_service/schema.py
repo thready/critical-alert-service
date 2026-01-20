@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any, Dict, Tuple
+import re
 import jsonschema
 
 INCOMING_ALERT_SCHEMA: Dict[str, Any] = {
@@ -98,11 +99,7 @@ def validate_alert(payload: Any) -> Tuple[bool, Dict[str, str]]:
 
     for error in errors:
         if error.validator == "additionalProperties":
-            extras = []
-            if isinstance(error.params, dict):
-                extras = error.params.get("additionalProperties") or []
-            elif isinstance(error.params, (list, tuple, set)):
-                extras = list(error.params)
+            extras = re.findall(r"'([^']+)'", error.message)
             for extra in extras:
                 if extra not in field_errors:
                     field_errors[extra] = "unknown field"

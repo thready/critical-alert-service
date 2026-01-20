@@ -193,7 +193,19 @@ def create_server(config: Config) -> ThreadingHTTPServer:
                     self._send_json(400, payload, request_id)
                     return
 
-                valid, field_errors = validate_alert(payload_json)
+                try:
+                    valid, field_errors = validate_alert(payload_json)
+                except AttributeError:
+                    validation_result = "fail"
+                    error = _error_body(
+                        "VALIDATION",
+                        "SCHEMA_INVALID",
+                        "Request body failed validation.",
+                        {"field_errors": {"_": "schema validation error"}},
+                    )
+                    payload = _json_body(False, request_id, error=error)
+                    self._send_json(400, payload, request_id)
+                    return
                 if not valid:
                     validation_result = "fail"
                     error = _error_body(
